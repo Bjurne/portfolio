@@ -9,8 +9,8 @@
   --color-accent: var(--accent);
   --color-accent-contrast: var(--accent-contrast);
 
-  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: ui-monospace, Consolas, monospace;
+  --font-sans: var(--font-sans-base);
+  --font-mono: var(--font-mono-base);
 }
 
 :root {
@@ -21,10 +21,12 @@
   --border: #e5e4e7;
   --accent: #aa3bff;
   --accent-contrast: #ffffff;
+  --font-sans-base: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono-base: ui-monospace, Consolas, monospace;
   color-scheme: light;
 }
 
-[data-theme='dark'] {
+[data-mode='dark'] {
   --bg: #16171d;
   --surface: #1f2028;
   --text: #9ca3af;

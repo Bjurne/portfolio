@@ -1,13 +1,13 @@
 import { useTheme } from '@/theme/theme-context'
 
 export function ThemeToggle() {
-  const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
+  const { mode, toggleMode } = useTheme()
+  const isDark = mode === 'dark'
 
   return (
     <button
       type="button"
-      onClick={toggleTheme}
+      onClick={toggleMode}
       aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
       aria-pressed={isDark}
       className="grid size-9 place-items-center rounded-full border border-border text-text transition-colors hover:border-accent hover:text-accent"
