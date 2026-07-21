@@ -1,28 +1,70 @@
 import { useEffect, useState, type ReactNode } from 'react'
-import { ThemeContext, type Theme } from './theme-context'
+import { ThemeContext, type Mode } from './theme-context'
+import { themePresets, type PresetId } from './presets'
 
 const STORAGE_KEY = 'portfolio-theme'
+const DEFAULT_PRESET: PresetId = 'default'
 
-function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'light'
+interface ThemeState {
+  preset: PresetId
+  mode: Mode
+}
+
+function isMode(value: unknown): value is Mode {
+  return value === 'light' || value === 'dark'
+}
+
+function isKnownPreset(value: unknown): value is PresetId {
+  return typeof value === 'string' && themePresets.some((preset) => preset.id === value)
+}
+
+function prefersDarkMode(): boolean {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+function getInitialThemeState(): ThemeState {
+  if (typeof window === 'undefined') return { preset: DEFAULT_PRESET, mode: 'light' }
 
   const stored = window.localStorage.getItem(STORAGE_KEY)
-  if (stored === 'light' || stored === 'dark') return stored
 
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  // Legacy pre-preset value: a bare 'light' | 'dark' string.
+  if (isMode(stored)) return { preset: DEFAULT_PRESET, mode: stored }
+
+  if (stored) {
+    try {
+      const parsed: unknown = JSON.parse(stored)
+      if (
+        parsed &&
+        typeof parsed === 'object' &&
+        isKnownPreset((parsed as { preset?: unknown }).preset) &&
+        isMode((parsed as { mode?: unknown }).mode)
+      ) {
+        return parsed as ThemeState
+      }
+    } catch {
+      // fall through to default
+    }
+  }
+
+  return { preset: DEFAULT_PRESET, mode: prefersDarkMode() ? 'dark' : 'light' }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+  const [{ preset, mode }, setState] = useState<ThemeState>(getInitialThemeState)
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    window.localStorage.setItem(STORAGE_KEY, theme)
-  }, [theme])
+    document.documentElement.dataset.preset = preset
+    document.documentElement.dataset.mode = mode
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ preset, mode }))
+  }, [preset, mode])
 
-  function toggleTheme() {
-    setTheme((current) => (current === 'light' ? 'dark' : 'light'))
+  function toggleMode() {
+    setState((current) => ({ ...current, mode: current.mode === 'light' ? 'dark' : 'light' }))
   }
 
-  return <ThemeContext value={{ theme, toggleTheme }}>{children}</ThemeContext>
+  function setPreset(newPreset: PresetId) {
+    setState((current) => ({ ...current, preset: newPreset }))
+  }
+
+  return <ThemeContext value={{ preset, mode, toggleMode, setPreset }}>{children}</ThemeContext>
 }

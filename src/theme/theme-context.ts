@@ -1,10 +1,13 @@
 import { createContext, use } from 'react'
+import type { PresetId } from './presets'
 
-export type Theme = 'light' | 'dark'
+export type Mode = 'light' | 'dark'
 
 export interface ThemeContextValue {
-  theme: Theme
-  toggleTheme: () => void
+  preset: PresetId
+  mode: Mode
+  toggleMode: () => void
+  setPreset: (preset: PresetId) => void
 }
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null)

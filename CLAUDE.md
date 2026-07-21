@@ -33,7 +33,8 @@ src/
   app/          App.tsx equivalent pieces: router.tsx (route table), Layout.tsx (Nav + PageTransition + Footer)
   pages/        Routed views — one file per route (Home, About, Projects, ProjectDetail, Contact)
   components/   Reusable UI (Nav, Footer, ThemeToggle, PageTransition)
-  theme/        ThemeProvider + theme-context.ts (context/hook split out for react-refresh lint rule)
+  theme/        ThemeProvider + theme-context.ts (context/hook split out for react-refresh lint rule),
+                presets.ts (theme preset registry), transitions.ts (per-preset route transitions)
   data/         Typed content (projects.ts) — edit here to change site content, not in components
   lib/          Small utilities (cn.ts classname helper)
   test/         Vitest setup file
@@ -48,11 +49,20 @@ api/
 
 - **Styling**: Tailwind utility classes directly in JSX. No CSS Modules, no styled-components.
   Use the `cn()` helper (`src/lib/cn.ts`) for conditional classes, not manual string concatenation.
-- **Theming**: colors are CSS custom properties (`--bg`, `--text`, `--accent`, etc.) defined in
-  `src/index.css` under `:root` (light) and `[data-theme='dark']`. Tailwind's `@theme` block maps
-  `--color-*` tokens onto them, so components use normal utilities (`bg-bg`, `text-accent`, ...)
-  and get theming for free — don't hardcode hex colors in components. `ThemeProvider` toggles the
-  `data-theme` attribute on `<html>` and persists to `localStorage`.
+- **Theming**: theme state has two independent axes — `preset` (visual style, e.g. `default`,
+  future `cli`) and `mode` (`light` | `dark`). `ThemeProvider` sets both as separate attributes on
+  `<html>`: `data-preset` and `data-mode`, and persists `{ preset, mode }` as JSON to
+  `localStorage` (with a one-time migration from the legacy bare `'light'`/`'dark'` string).
+  Available presets are registered in `src/theme/presets.ts` (id, label, description, swatch) —
+  add a preset by appending to that array. CSS custom properties (`--bg`, `--text`, `--accent`,
+  `--font-sans-base`, etc.) are defined in `src/index.css`, scoped by these attributes: `:root`
+  holds `default` preset / light mode, `[data-mode='dark']` overrides for dark mode, and a new
+  preset adds its own `[data-preset='<id>']` (mode-invariant tokens) and
+  `[data-preset='<id>'][data-mode='light'|'dark']` (full palette) blocks. Tailwind's `@theme` block
+  maps `--color-*`/`--font-*` tokens onto these vars, so components use normal utilities (`bg-bg`,
+  `text-accent`, `font-sans`, ...) and get theming for free — don't hardcode hex colors or font
+  stacks in components. Per-preset route-transition variants live in `src/theme/transitions.ts`
+  (`routeTransitions`, keyed by preset id) and are read by `PageTransition.tsx`.
 - **Content**: real content (project entries, bio copy) belongs in `src/data/*.ts` as typed
   objects, not inline in JSX, so pages stay generic and content stays easy to edit.
 - **Context + fast refresh**: any React context lives in its own `*-context.ts` file exporting
