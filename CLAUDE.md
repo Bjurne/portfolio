@@ -82,3 +82,11 @@ Vercel project — see `.env.example`.
 - Don't introduce a new dependency for something Tailwind, React Router, or Motion already cover.
 - When adding a page, add it to `src/app/router.tsx` and to the `links` array in
   `src/components/Nav.tsx`.
+- **Feature branches**: when starting a new feature, check out a fresh branch off `main` first
+  (`git checkout -b feature/<name>`) and do all work for that feature there. Don't commit
+  directly to `main`. Before pushing the branch, `npm run lint`, `tsc -b`, and `npm run test`
+  must all pass.
+- **After pushing (or merging) a feature branch**: tell the user the feature is pushed and
+  remind them to run `/clear` before starting the next feature, to keep context focused on one
+  feature at a time. Claude Code has no way to trigger `/clear` itself — this must be a spoken
+  reminder, not a silent assumption that it happened.
