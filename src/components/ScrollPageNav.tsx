@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { isAtPageBottom, isAtPageTop, scrollTowardsBottom } from '@/lib/scroll'
-import { getNextPath, getPreviousPath, isLoopPage, pageLoopLabels } from '@/lib/pageLoop'
+import {
+  getNextPath,
+  getPreviousPath,
+  isLoopPage,
+  isProjectDetailPage,
+  pageLoopLabels,
+} from '@/lib/pageLoop'
 import { PAGE_TRANSITION_SETTLED_EVENT } from '@/theme/transitions'
-import { NextPageButton } from './NextPageButton'
+import { PageNavButton } from './PageNavButton'
 
 const WHEEL_THRESHOLD = 12
 const SWIPE_THRESHOLD = 48
 const NAV_COOLDOWN_MS = 700
+const PROJECTS_PATH = '/projects'
 
 export function ScrollPageNav() {
   const location = useLocation()
@@ -17,6 +24,7 @@ export function ScrollPageNav() {
   const touchStartYRef = useRef<number | null>(null)
 
   const active = isLoopPage(location.pathname)
+  const isDetail = isProjectDetailPage(location.pathname)
 
   useEffect(() => {
     if (!active) return
@@ -83,6 +91,17 @@ export function ScrollPageNav() {
     }
   }, [active, location.pathname, navigate])
 
+  if (isDetail) {
+    return (
+      <PageNavButton
+        arrow="left"
+        active
+        ariaLabel="Back to projects"
+        onClick={() => navigate(PROJECTS_PATH)}
+      />
+    )
+  }
+
   if (!active) return null
 
   function handleButtonClick() {
@@ -94,9 +113,10 @@ export function ScrollPageNav() {
   }
 
   return (
-    <NextPageButton
-      atBottom={atBottom}
-      nextPageLabel={pageLoopLabels[getNextPath(location.pathname)]}
+    <PageNavButton
+      arrow="down"
+      active={atBottom}
+      ariaLabel={atBottom ? `Go to ${pageLoopLabels[getNextPath(location.pathname)]}` : 'Scroll down'}
       onClick={handleButtonClick}
     />
   )

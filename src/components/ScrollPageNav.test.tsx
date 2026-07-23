@@ -17,14 +17,18 @@ describe('ScrollPageNav', () => {
     expect(screen.getByRole('button', { name: 'Go to Projects' })).toBeInTheDocument()
   })
 
-  it('does not render on a project detail page', async () => {
+  it('shows a back-to-projects button on a project detail page instead of the loop button', async () => {
     const user = userEvent.setup()
     render(<App />)
 
     await user.click(screen.getByRole('link', { name: 'Projects' }))
     await user.click(await screen.findByRole('heading', { name: 'This Portfolio' }))
-
     await screen.findByRole('heading', { name: 'This Portfolio' })
-    expect(screen.queryByRole('button', { name: /go to/i })).not.toBeInTheDocument()
+
+    expect(screen.queryByRole('button', { name: /go to|scroll down/i })).not.toBeInTheDocument()
+    const backButton = screen.getByRole('button', { name: 'Back to projects' })
+
+    await user.click(backButton)
+    expect(await screen.findByRole('heading', { name: 'Projects' })).toBeInTheDocument()
   })
 })

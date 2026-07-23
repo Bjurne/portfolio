@@ -14,6 +14,11 @@ export function isLoopPage(pathname: string): boolean {
   return pageLoopOrder.includes(pathname)
 }
 
+/** A project's detail page (/projects/:slug) - reached from, and backed out to, /projects. */
+export function isProjectDetailPage(pathname: string): boolean {
+  return pathname.startsWith('/projects/')
+}
+
 export function getNextPath(pathname: string): string {
   const index = pageLoopOrder.indexOf(pathname)
   if (index === -1) return pathname
