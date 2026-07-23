@@ -48,6 +48,12 @@
   }
 }
 
+html {
+  /* Reserves the scrollbar gutter so it can't appear/disappear between route transitions
+     and shift content width. */
+  scrollbar-gutter: stable;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);

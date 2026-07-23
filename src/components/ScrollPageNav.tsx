@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { isAtPageBottom, isAtPageTop, scrollTowardsBottom } from '@/lib/scroll'
 import { getNextPath, getPreviousPath, isLoopPage, pageLoopLabels } from '@/lib/pageLoop'
+import { PAGE_TRANSITION_SETTLED_EVENT } from '@/theme/transitions'
 import { NextPageButton } from './NextPageButton'
 
 const WHEEL_THRESHOLD = 12
@@ -23,11 +24,10 @@ export function ScrollPageNav() {
     const updateAtBottom = () => setAtBottom(isAtPageBottom())
     updateAtBottom()
 
-    // AnimatePresence delays mounting the new route's content until the outgoing page's exit
-    // animation finishes, so its real height lands well after this effect runs. Re-check once
-    // that actually happens instead of trusting the pathname-change timing alone.
-    const resizeObserver = new ResizeObserver(updateAtBottom)
-    resizeObserver.observe(document.documentElement)
+    // AnimatePresence (mode="wait") mounts the new page's real content only once the outgoing
+    // page's exit animation finishes, then animates the new page in - so its real height doesn't
+    // land until that entrance animation completes, well after this effect runs.
+    window.addEventListener(PAGE_TRANSITION_SETTLED_EVENT, updateAtBottom)
 
     function goTo(path: string) {
       if (lockedRef.current) return
@@ -74,7 +74,7 @@ export function ScrollPageNav() {
     window.addEventListener('touchend', handleTouchEnd, { passive: true })
 
     return () => {
-      resizeObserver.disconnect()
+      window.removeEventListener(PAGE_TRANSITION_SETTLED_EVENT, updateAtBottom)
       window.removeEventListener('wheel', handleWheel)
       window.removeEventListener('scroll', updateAtBottom)
       window.removeEventListener('resize', updateAtBottom)

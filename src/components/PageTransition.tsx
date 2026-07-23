@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useLocation, useOutlet } from 'react-router'
 import { useTheme } from '@/theme/theme-context'
-import { routeTransitions } from '@/theme/transitions'
+import { PAGE_TRANSITION_SETTLED_EVENT, routeTransitions } from '@/theme/transitions'
 import { getPageDirection, type TransitionDirection } from '@/lib/pageLoop'
 
 export function PageTransition() {
@@ -35,6 +35,14 @@ export function PageTransition() {
         animate="animate"
         exit="exit"
         transition={transition}
+        onAnimationComplete={(definition) => {
+          // AnimatePresence reuses this same callback for the exit animation too (definition
+          // "exit"), fired while the outgoing page is still on screen - only the "animate"
+          // completion means this page's real layout has actually landed.
+          if (definition === 'animate') {
+            window.dispatchEvent(new Event(PAGE_TRANSITION_SETTLED_EVENT))
+          }
+        }}
         className="mx-auto w-full max-w-4xl flex-1 px-4 pt-10 pb-24 sm:px-8"
       >
         {outlet}
