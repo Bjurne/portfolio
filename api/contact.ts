@@ -1,5 +1,7 @@
 export const config = { runtime: 'edge' }
 
+// NOTE (Kristoffer) - We should probably implement GDPR compliance for our ContactForm
+
 interface ContactPayload {
   name: string
   email: string
