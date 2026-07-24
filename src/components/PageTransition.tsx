@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useLocation, useOutlet } from 'react-router'
 import { useTheme } from '@/theme/theme-context'
 import { PAGE_TRANSITION_SETTLED_EVENT, routeTransitions } from '@/theme/transitions'
-import { getPageDirection, type TransitionDirection } from '@/lib/pageLoop'
+import { getPageTransitionPlan, type PageTransitionPlan } from '@/lib/pageLoop'
 
 export function PageTransition() {
   const location = useLocation()
@@ -13,11 +13,11 @@ export function PageTransition() {
   const { variants, transition } = routeTransitions[preset]
 
   // Derived during render so the exiting page's variants, re-evaluated by AnimatePresence via
-  // its `custom` prop, agree with the entering page's direction.
+  // its `custom` prop, agree with the entering page's transition plan.
   const [previousPathname, setPreviousPathname] = useState(location.pathname)
-  const [direction, setDirection] = useState<TransitionDirection>('forward')
+  const [plan, setPlan] = useState<PageTransitionPlan>({ axis: 'y', direction: 'forward' })
   if (previousPathname !== location.pathname) {
-    setDirection(getPageDirection(previousPathname, location.pathname))
+    setPlan(getPageTransitionPlan(previousPathname, location.pathname))
     setPreviousPathname(location.pathname)
   }
 
@@ -26,10 +26,10 @@ export function PageTransition() {
     : variants
 
   return (
-    <AnimatePresence mode="wait" initial={false} custom={direction}>
+    <AnimatePresence mode="wait" initial={false} custom={plan}>
       <motion.main
         key={location.pathname}
-        custom={direction}
+        custom={plan}
         variants={activeVariants}
         initial="initial"
         animate="animate"
